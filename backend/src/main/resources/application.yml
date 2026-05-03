@@ -39,4 +39,5 @@ fillos:
     key-secret: ${RAZORPAY_KEY_SECRET:}
     webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
     currency: ${RAZORPAY_CURRENCY:INR}
-
+  app:
+    host: ${APP_HOST:http://localhost:5173}
