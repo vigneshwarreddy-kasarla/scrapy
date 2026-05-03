@@ -1,0 +1,80 @@
+# --- Maven / Java ---
+**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Compiled / packaged (anywhere under repo)
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+# Keep Maven Wrapper runnable on a fresh clone
+!**/.mvn/wrapper/maven-wrapper.jar
+hs_err_pid*
+replay_pid*
+
+# --- IDEs ---
+# IntelliJ / IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+.buildpath
+
+# VS Code (local-only; uncomment if you never commit workspace settings)
+# .vscode/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+
+# --- OS ---
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Logs & temp ---
+*.log
+*.tmp
+*.temp
+*.swp
+*~
+
+# --- Secrets & local overrides (never commit real credentials) ---
+.env
+.env.*
+!.env.example
+**/application-local.yml
+**/application-local.properties
+**/application-secret.yml
+**/application-secret.properties
+
+# --- Cursor / local tooling ---
+.cursor/
+!.cursor/rules/
+!.cursor/rules/**
+
+# --- Optional: large or private binaries at repo root ---
+# Uncomment if you do not want design PDFs in the remote repo:
+# /FoodApp_*.pdf
+
+# --- Local demo apps / sandboxes ---
+/gringotts-frontend-only-demo/

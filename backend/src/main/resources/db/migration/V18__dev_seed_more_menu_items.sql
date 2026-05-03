@@ -1,0 +1,60 @@
+-- Expand seed menu so frontend cards/filters have enough data for UI testing.
+-- Reuses existing dummy image URLs intentionally.
+
+INSERT INTO menu_items (
+  id, category_id, name, description, price, discounted_price, image_url,
+  is_veg, is_available, preparation_time, calories, tags, ingredients, allergens,
+  weight_grams, display_order
+)
+VALUES
+  ('30000001-0003-4003-8003-000000000101', '20000001-0002-4002-8002-000000000001', 'Paneer Tikka Bites',
+   'Char-grilled cottage cheese cubes with spice.', 8.50, 7.90, 'http://localhost:8080/dummyimages/four.jpg',
+   TRUE, TRUE, 18, 290, ARRAY['starter','grill']::TEXT[], ARRAY['paneer','capsicum']::TEXT[], ARRAY['dairy']::TEXT[],
+   220, 10),
+  ('30000001-0003-4003-8003-000000000102', '20000001-0002-4002-8002-000000000001', 'Crispy Corn Cups',
+   'Sweet corn tossed in pepper and herbs.', 6.20, NULL, 'http://localhost:8080/dummyimages/five.jpg',
+   TRUE, TRUE, 12, 240, ARRAY['starter','crispy']::TEXT[], ARRAY['corn','spices']::TEXT[], ARRAY[]::TEXT[],
+   180, 11),
+  ('30000001-0003-4003-8003-000000000103', '20000001-0002-4002-8002-000000000001', 'Chicken Popper Bowl',
+   'Juicy chicken poppers with dip.', 9.40, 8.90, 'http://localhost:8080/dummyimages/six.jpg',
+   FALSE, TRUE, 16, 330, ARRAY['starter','protein']::TEXT[], ARRAY['chicken','pepper']::TEXT[], ARRAY[]::TEXT[],
+   210, 12),
+  ('30000001-0003-4003-8003-000000000104', '20000001-0002-4002-8002-000000000001', 'Garlic Bread Twists',
+   'Buttery twists with roasted garlic.', 5.10, NULL, 'http://localhost:8080/dummyimages/three.jpg',
+   TRUE, TRUE, 10, 260, ARRAY['starter','bread']::TEXT[], ARRAY['flour','garlic']::TEXT[], ARRAY['gluten']::TEXT[],
+   160, 13),
+
+  ('30000001-0003-4003-8003-000000000201', '20000001-0002-4002-8002-000000000002', 'Veg Kathi Roll',
+   'Griddled wrap loaded with vegetables.', 8.90, 7.95, 'http://localhost:8080/dummyimages/two.jpg',
+   TRUE, TRUE, 14, 420, ARRAY['main','wrap']::TEXT[], ARRAY['flour','mixed veg']::TEXT[], ARRAY['gluten']::TEXT[],
+   260, 10),
+  ('30000001-0003-4003-8003-000000000202', '20000001-0002-4002-8002-000000000002', 'Butter Paneer Bowl',
+   'Creamy paneer masala with rice.', 10.80, NULL, 'http://localhost:8080/dummyimages/one.jpg',
+   TRUE, TRUE, 20, 560, ARRAY['main','north-indian']::TEXT[], ARRAY['paneer','tomato']::TEXT[], ARRAY['dairy']::TEXT[],
+   380, 11),
+  ('30000001-0003-4003-8003-000000000203', '20000001-0002-4002-8002-000000000002', 'Chicken Rice Combo',
+   'Spiced chicken gravy served with rice.', 11.90, 10.90, 'http://localhost:8080/dummyimages/seven.jpg',
+   FALSE, TRUE, 24, 640, ARRAY['main','combo']::TEXT[], ARRAY['chicken','rice']::TEXT[], ARRAY[]::TEXT[],
+   430, 12),
+  ('30000001-0003-4003-8003-000000000204', '20000001-0002-4002-8002-000000000002', 'Cheese Dosa Deluxe',
+   'Golden dosa with cheese and masala.', 8.30, NULL, 'http://localhost:8080/dummyimages/six.jpg',
+   TRUE, TRUE, 16, 470, ARRAY['main','south-indian']::TEXT[], ARRAY['rice batter','cheese']::TEXT[], ARRAY['dairy']::TEXT[],
+   300, 13),
+
+  ('30000001-0003-4003-8003-000000000301', '20000001-0002-4002-8002-000000000003', 'Masala Chaas',
+   'Spiced buttermilk cooler.', 2.90, NULL, 'http://localhost:8080/dummyimages/three.jpg',
+   TRUE, TRUE, 4, 90, ARRAY['drink','cooler']::TEXT[], ARRAY['curd','spices']::TEXT[], ARRAY['dairy']::TEXT[],
+   250, 10),
+  ('30000001-0003-4003-8003-000000000302', '20000001-0002-4002-8002-000000000003', 'Lemon Mint Soda',
+   'Fresh lemon soda with mint leaves.', 3.20, 2.80, 'http://localhost:8080/dummyimages/five.jpg',
+   TRUE, TRUE, 4, 75, ARRAY['drink','fizzy']::TEXT[], ARRAY['lemon','mint']::TEXT[], ARRAY[]::TEXT[],
+   280, 11),
+  ('30000001-0003-4003-8003-000000000303', '20000001-0002-4002-8002-000000000003', 'Chocolate Shake',
+   'Rich cold chocolate milkshake.', 4.70, NULL, 'http://localhost:8080/dummyimages/four.jpg',
+   TRUE, TRUE, 6, 320, ARRAY['drink','dessert']::TEXT[], ARRAY['milk','cocoa']::TEXT[], ARRAY['dairy']::TEXT[],
+   320, 12),
+  ('30000001-0003-4003-8003-000000000304', '20000001-0002-4002-8002-000000000003', 'Iced Americano',
+   'Bold coffee over ice.', 3.80, NULL, 'http://localhost:8080/dummyimages/two.jpg',
+   TRUE, TRUE, 5, 40, ARRAY['drink','coffee']::TEXT[], ARRAY['coffee']::TEXT[], ARRAY[]::TEXT[],
+   240, 13)
+ON CONFLICT (id) DO NOTHING;

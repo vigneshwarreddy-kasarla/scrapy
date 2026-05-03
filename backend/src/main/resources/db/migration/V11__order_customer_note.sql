@@ -1,0 +1,3 @@
+-- Optional instructions from the customer at checkout (kitchen / delivery).
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_note TEXT NULL;
