@@ -95,6 +95,8 @@ public class SecurityConfig {
                                                                 .hasRole("ADMIN")
                                                                 .requestMatchers("/api/v1/delivery/**")
                                                                 .hasRole("DELIVERY_AGENT")
+                                                                .requestMatchers("/api/v1/restaurant/**")
+                                                                .hasRole("RESTAURANT")
                                                                 .requestMatchers(
                                                                                 "/api/v1/cart/**",
                                                                                 "/api/v1/favorites/**",

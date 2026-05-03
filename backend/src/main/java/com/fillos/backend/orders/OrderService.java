@@ -148,4 +148,22 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found or not assigned to you");
         }
     }
+
+    public List<AdminOrderSummaryResponse> listPendingOrdersForRestaurant() {
+        return orders.listPendingOrdersForRestaurant(LIST_LIMIT);
+    }
+
+    @Transactional
+    public void acceptOrderByRestaurant(UUID restaurantId, UUID orderId) {
+        if (orders.acceptOrderByRestaurant(orderId, restaurantId) == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order not found or already assigned");
+        }
+    }
+
+    @Transactional
+    public void updateDeliveryLocation(UUID agentId, UUID orderId, BigDecimal lat, BigDecimal lng) {
+        if (orders.updateDeliveryLocation(orderId, lat, lng) == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        }
+    }
 }

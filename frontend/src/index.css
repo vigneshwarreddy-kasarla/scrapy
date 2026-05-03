@@ -3,30 +3,46 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap");
 
 :root {
-  color-scheme: light;
-  --bg: #f7efe3;
-  --panel: #fff8ee;
-  --chrome-light: #fff5e6;
-  --chrome-mid: #f3dfc3;
-  --chrome-deep: #e8cfae;
-  --text: #2f2418;
-  --muted: #6f604b;
-  --accent: #c95d2f;
-  --danger: #b2472f;
-  --border: #dcc7ad;
-  font-family: "Poppins", "Segoe UI", Roboto, Ubuntu, sans-serif;
+  /* Clean flat colors + ocean blue theme */
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #f97316; /* Vibrant orange accent */
+  --danger: #ef4444;
+  --border: #e2e8f0;
+  --primary-button: #0f172a;
+  --primary-button-text: #ffffff;
+  --chrome-bg: #ffffff;
+  font-family: "Inter", "Segoe UI", Roboto, Ubuntu, sans-serif;
   line-height: 1.6;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f7efe3;
-    --panel: #fff8ee;
-    --text: #2f2418;
-    --muted: #6f604b;
-    --accent: #c95d2f;
-    --danger: #b2472f;
-    --border: #dcc7ad;
+[data-theme='dark'] {
+  --bg: #0f172a; /* Dark Ocean Blue */
+  --panel: #1e293b;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --accent: #fb923c;
+  --danger: #f87171;
+  --border: #334155;
+  --primary-button: #38bdf8;
+  --primary-button-text: #0f172a;
+  --chrome-bg: #1e293b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #fb923c;
+    --danger: #f87171;
+    --border: #334155;
+    --primary-button: #38bdf8;
+    --primary-button-text: #0f172a;
+    --chrome-bg: #1e293b;
   }
 }
 
@@ -37,14 +53,11 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(130% 90% at 10% 5%, #fff6e8 0%, transparent 45%),
-    radial-gradient(120% 80% at 95% 10%, #ffe8d8 0%, transparent 40%),
-    linear-gradient(150deg, #f8f1e4 0%, #efe4d4 45%, #e9ddcb 100%);
+  background: var(--bg);
   color: var(--text);
-  text-rendering: auto;
-  -webkit-font-smoothing: auto;
-  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Force readable body font for all non-heading text elements. */
@@ -61,7 +74,7 @@ a,
 small,
 .muted,
 .small {
-  font-family: "Poppins", "Segoe UI", Roboto, Ubuntu, sans-serif !important;
+  font-family: "Inter", "Segoe UI", Roboto, Ubuntu, sans-serif !important;
 }
 
 a {
@@ -81,12 +94,7 @@ a {
   gap: 1rem;
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--chrome-light) 86%, transparent), color-mix(in srgb, var(--chrome-mid) 80%, transparent)),
-    linear-gradient(90deg, color-mix(in srgb, var(--chrome-mid) 35%, transparent), color-mix(in srgb, var(--chrome-deep) 22%, transparent));
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-shadow: 0 6px 18px rgba(112, 81, 46, 0.1);
+  background: var(--chrome-bg);
 }
 
 .nav-menu-toggle {
@@ -106,10 +114,9 @@ a {
   height: 2.5rem;
   object-fit: cover;
   border-radius: 999px;
-  border: 1px solid rgba(42, 88, 64, 0.2);
-  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--border);
+  background: var(--panel);
   padding: 0.18rem;
-  box-shadow: 0 2px 10px rgba(42, 88, 64, 0.18);
 }
 
 .brand-text {
@@ -163,11 +170,8 @@ a {
 
 .footer {
   border-top: 1px solid var(--border);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--chrome-mid) 60%, white), color-mix(in srgb, var(--chrome-deep) 44%, white)),
-    linear-gradient(120deg, color-mix(in srgb, var(--chrome-deep) 32%, transparent), color-mix(in srgb, var(--chrome-mid) 22%, transparent));
+  background: var(--chrome-bg);
   padding: 1rem 1.25rem 1.25rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62), 0 -8px 20px rgba(112, 81, 46, 0.08);
 }
 
 .footer-inner {
@@ -438,14 +442,14 @@ button.danger {
 
 .pixel-card {
   padding: 0.75rem 1rem;
-  background: linear-gradient(145deg, #fff9ec 0%, #fff2d9 100%);
+  background: var(--panel);
+  border: 1px solid var(--border);
 }
 
 .auth-card {
-  background: linear-gradient(140deg, rgba(255, 255, 255, 0.7), rgba(253, 242, 211, 0.7));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 14px 30px rgba(50, 35, 15, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
 }
 
 .auth-shell {
@@ -707,36 +711,20 @@ button.danger {
 
 button:not(.linkish):not(.plain-icon-btn),
 .button {
-  background-image:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 38%),
-    linear-gradient(145deg, #d68558 0%, #c65b2d 52%, #b85024 100%);
-  color: #fff7ef;
-  border: 1px solid rgba(122, 55, 26, 0.38);
-  box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.22) inset,
-    4px 6px 0 #000;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease, background-position 0.3s ease;
+  background: var(--primary-button);
+  color: var(--primary-button-text);
+  border: 1px solid transparent;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 button:not(.linkish):not(.plain-icon-btn):hover:not(:disabled),
 .button:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.24) inset,
-    6px 9px 0 #000,
-    0 10px 18px rgba(67, 33, 16, 0.22);
-  filter: saturate(1.05);
+  opacity: 0.9;
 }
 
 button:not(.linkish):not(.plain-icon-btn):active:not(:disabled),
 .button:active {
-  transform: translateY(0.5px);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.2) inset,
-    3px 4px 0 #000,
-    0 4px 10px rgba(67, 33, 16, 0.16);
+  transform: translateY(1px);
 }
 
 .success {
@@ -765,18 +753,18 @@ button:not(.linkish):not(.plain-icon-btn):active:not(:disabled),
 .admin-tab {
   padding: 0.5rem 0.85rem;
   border-radius: 999px;
-  border: 1px solid rgba(106, 77, 51, 0.4);
+  border: 1px solid var(--border);
   text-decoration: none;
-  color: #4b3522;
-  background: rgba(255, 249, 237, 0.72);
+  color: var(--text);
+  background: var(--bg);
   font-weight: 600;
   text-align: center;
 }
 
 .admin-tab.active {
-  background: linear-gradient(145deg, #f1b26f 0%, #e59d58 100%);
-  color: #2f1b0b;
-  border-color: #c9823c;
+  background: var(--primary-button);
+  color: var(--primary-button-text);
+  border-color: var(--primary-button);
 }
 
 .admin-grid {
@@ -791,7 +779,9 @@ button:not(.linkish):not(.plain-icon-btn):active:not(:disabled),
   flex-direction: column;
   gap: 0.8rem;
   min-height: 100%;
-  background: linear-gradient(155deg, rgba(255, 249, 237, 0.92), rgba(252, 242, 224, 0.9));
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   line-height: 1.45;
 }
 

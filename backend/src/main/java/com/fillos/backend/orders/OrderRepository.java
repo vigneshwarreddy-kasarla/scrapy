@@ -460,6 +460,62 @@ public class OrderRepository {
                 p);
     }
 
+    public List<AdminOrderSummaryResponse> listPendingOrdersForRestaurant(int limit) {
+        String sql =
+                """
+                SELECT o.id, o.user_id, u.phone, o.status::text, o.total_amount, o.created_at,
+                       o.delivery_agent_id, o.delivered_at, o.delivery_address_snapshot,
+                       o.payment_status::text, o.paid_at, o.customer_note
+                FROM orders o
+                JOIN users u ON u.id = o.user_id AND u.deleted_at IS NULL
+                WHERE o.status = CAST('placed' AS order_status) OR o.status = CAST('confirmed' AS order_status)
+                ORDER BY o.created_at ASC
+                LIMIT :limit
+                """;
+        return jdbc.query(
+                sql,
+                Map.of("limit", limit),
+                (rs, rn) ->
+                        new AdminOrderSummaryResponse(
+                                rs.getObject("id", UUID.class),
+                                rs.getObject("user_id", UUID.class),
+                                rs.getString("phone"),
+                                rs.getString("status"),
+                                rs.getBigDecimal("total_amount"),
+                                rs.getTimestamp("created_at").toInstant(),
+                                rs.getObject("delivery_agent_id", UUID.class),
+                                instantOrNull(rs.getTimestamp("delivered_at")),
+                                rs.getString("delivery_address_snapshot"),
+                                rs.getString("payment_status"),
+                                instantOrNull(rs.getTimestamp("paid_at")),
+                                rs.getString("customer_note")));
+    }
+
+    public int acceptOrderByRestaurant(UUID orderId, UUID restaurantId) {
+        return jdbc.update(
+                """
+                UPDATE orders
+                SET restaurant_id = :restaurantId,
+                    status = CAST('preparing' AS order_status),
+                    updated_at = NOW()
+                WHERE id = :orderId
+                  AND restaurant_id IS NULL
+                """,
+                Map.of("orderId", orderId, "restaurantId", restaurantId));
+    }
+
+    public int updateDeliveryLocation(UUID orderId, BigDecimal lat, BigDecimal lng) {
+        return jdbc.update(
+                """
+                UPDATE orders
+                SET delivery_lat = :lat,
+                    delivery_lng = :lng,
+                    updated_at = NOW()
+                WHERE id = :orderId
+                """,
+                Map.of("orderId", orderId, "lat", lat, "lng", lng));
+    }
+
     public record RazorpayOrderContext(
             UUID id, String status, String paymentStatus, BigDecimal totalAmount, String razorpayOrderId) {}
 

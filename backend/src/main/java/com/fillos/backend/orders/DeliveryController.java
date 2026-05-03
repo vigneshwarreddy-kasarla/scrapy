@@ -34,4 +34,15 @@ public class DeliveryController {
             @AuthenticationPrincipal AppUserDetails principal, @PathVariable("orderId") UUID orderId) {
         orderService.completeDelivery(principal.getId(), orderId);
     }
+
+    @PostMapping("/orders/{orderId}/location")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateLocation(
+            @AuthenticationPrincipal AppUserDetails principal,
+            @PathVariable("orderId") UUID orderId,
+            @org.springframework.web.bind.annotation.RequestBody LocationUpdateRequest body) {
+        orderService.updateDeliveryLocation(principal.getId(), orderId, body.lat(), body.lng());
+    }
+
+    public record LocationUpdateRequest(java.math.BigDecimal lat, java.math.BigDecimal lng) {}
 }

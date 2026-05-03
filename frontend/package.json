@@ -10,9 +10,15 @@
     "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "dependencies": {
+    "@types/leaflet": "^1.9.21",
+    "@types/leaflet-routing-machine": "^3.2.9",
+    "leaflet": "^1.9.4",
+    "leaflet-geosearch": "^4.4.0",
+    "leaflet-routing-machine": "^3.2.12",
     "pixel-retroui": "^2.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
