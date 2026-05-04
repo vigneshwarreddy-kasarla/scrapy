@@ -93,6 +93,14 @@ public class AuthService {
      */
     @Transactional
     public UserProfileResponse createDeliveryAgentByAdmin(RegisterRequest req) {
+        return createUserByAdmin(req, "delivery_agent");
+    }
+
+    /**
+     * Admin-only: create a user with a specific role.
+     */
+    @Transactional
+    public UserProfileResponse createUserByAdmin(RegisterRequest req, String role) {
         String normalizedPhone = normalizeIndiaPhone(req.phone());
         if (users.existsByPhone(normalizedPhone)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone already registered");
@@ -104,8 +112,8 @@ public class AuthService {
         String email = req.email() == null || req.email().isBlank() ? null : req.email();
         UUID id =
                 users.insertUser(
-                        req.name(), email, normalizedPhone, DEFAULT_COUNTRY_CODE, hash, "delivery_agent");
-        return new UserProfileResponse(id, req.name(), email, normalizedPhone, "delivery_agent", true, false);
+                        req.name(), email, normalizedPhone, DEFAULT_COUNTRY_CODE, hash, role);
+        return new UserProfileResponse(id, req.name(), email, normalizedPhone, role, true, false);
     }
 
     public List<DeliveryAgentSummaryResponse> listActiveDeliveryAgents() {

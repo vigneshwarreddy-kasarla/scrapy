@@ -32,4 +32,12 @@ public class AdminStaffController {
     public UserProfileResponse createDeliveryAgent(@Valid @RequestBody RegisterRequest body) {
         return authService.createDeliveryAgentByAdmin(body);
     }
+
+    @PostMapping("/users/{role}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserProfileResponse createUser(
+            @org.springframework.web.bind.annotation.PathVariable String role,
+            @Valid @RequestBody RegisterRequest body) {
+        return authService.createUserByAdmin(body, role);
+    }
 }
