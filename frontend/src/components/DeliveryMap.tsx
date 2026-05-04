@@ -95,7 +95,7 @@ interface DeliveryMapProps {
   restaurantPos?: [number, number]; // [lat, lng]
 }
 
-export default function DeliveryMap({ restaurantPos = [40.7128, -74.0060] }: DeliveryMapProps) {
+export default function DeliveryMap({ restaurantPos = [17.3850, 78.4867] }: DeliveryMapProps) {
   const [riderPos, setRiderPos] = useState<[number, number] | null>(null);
   
   useEffect(() => {
