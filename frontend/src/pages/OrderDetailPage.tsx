@@ -4,6 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import { apiJson } from "../api/client";
 import { formatMoney } from "../utils/money";
 import { setStoredItemRating } from "../utils/ratings";
+import { useAuth } from "../context/AuthContext";
+import { useWebSocket } from "../utils/useWebSocket";
 
 type Line = {
   lineId: string;
@@ -26,14 +28,6 @@ type OrderDetail = {
   customerNote: string | null;
 };
 
-type RazorpayPayload = {
-  fillosOrderId: string;
-  razorpayOrderId: string;
-  amount: number;
-  currency: string;
-  keyId: string;
-};
-
 type ReviewResponse = {
   reviewId: string;
   orderId: string;
@@ -44,6 +38,7 @@ type ReviewResponse = {
 
 export function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
+  const { user } = useAuth();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [payInfo, setPayInfo] = useState<string | null>(null);
@@ -53,50 +48,64 @@ export function OrderDetailPage() {
   const [itemRatings, setItemRatings] = useState<Record<string, number>>({});
   const [reviewNote, setReviewNote] = useState("");
 
-  useEffect(() => {
+  const loadOrder = async (cancelled = false) => {
     if (!orderId) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const o = await apiJson<OrderDetail>(`/api/v1/orders/${orderId}`);
-        if (!cancelled) {
-          setOrder(o);
-          const initialItemRatings: Record<string, number> = {};
-          o.lines.forEach((ln) => {
-            initialItemRatings[ln.lineId] = 0;
-          });
-          setItemRatings(initialItemRatings);
-          try {
-            const existing = await apiJson<ReviewResponse>(`/api/v1/orders/${orderId}/review`);
-            if (!cancelled) {
-              setReview(existing);
-              setDeliveryRating(existing.rating);
-              setReviewNote(existing.comment ?? "");
-            }
-          } catch {
-            if (!cancelled) setReview(null);
+    try {
+      const o = await apiJson<OrderDetail>(`/api/v1/orders/${orderId}`);
+      if (!cancelled) {
+        setOrder(o);
+        const initialItemRatings: Record<string, number> = {};
+        o.lines.forEach((ln) => {
+          initialItemRatings[ln.lineId] = 0;
+        });
+        setItemRatings(initialItemRatings);
+        try {
+          const existing = await apiJson<ReviewResponse>(`/api/v1/orders/${orderId}/review`);
+          if (!cancelled) {
+            setReview(existing);
+            setDeliveryRating(existing.rating);
+            setReviewNote(existing.comment ?? "");
           }
+        } catch {
+          if (!cancelled) setReview(null);
         }
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Not found");
       }
-    })();
+    } catch (e) {
+      if (!cancelled) setError(e instanceof Error ? e.message : "Not found");
+    }
+  };
+
+  useWebSocket({
+    topic: user?.id ? `/topic/user/${user.id}` : "",
+    onMessage: (msg) => {
+      console.log("Order update received:", msg);
+      void loadOrder();
+      alert("Order update received!");
+    },
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadOrder(cancelled);
     return () => {
       cancelled = true;
     };
   }, [orderId]);
 
-  async function requestRazorpay() {
+  async function bypassPayment() {
     if (!orderId) return;
     setPayInfo(null);
     setError(null);
     try {
-      const payload = await apiJson<RazorpayPayload>(`/api/v1/orders/${orderId}/payments/razorpay/order`, {
+      await apiJson(`/api/v1/orders/${orderId}/payments/bypass`, {
         method: "POST",
       });
-      setPayInfo(JSON.stringify(payload, null, 2));
+      // Refresh order state
+      const o = await apiJson<OrderDetail>(`/api/v1/orders/${orderId}`);
+      setOrder(o);
+      alert("Payment successful! Order placed.");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Razorpay order failed (disabled or wrong state?)");
+      setError(e instanceof Error ? e.message : "Payment simulation failed");
     }
   }
 
@@ -221,11 +230,11 @@ export function OrderDetailPage() {
       <div className="stack actions">
         {order.paymentStatus === "unpaid" && order.status !== "cancelled" && (
           <>
-            <Button type="button" onClick={() => void requestRazorpay()}>
-              Get Razorpay checkout payload
+            <Button type="button" onClick={() => void bypassPayment()}>
+              Simulate Payment (Bypass Razorpay)
             </Button>
             <p className="muted small">
-              Wire this JSON into Razorpay Checkout on the client when keys are configured on the server.
+              Click this button to instantly mark the order as paid and notify the restaurant.
             </p>
           </>
         )}

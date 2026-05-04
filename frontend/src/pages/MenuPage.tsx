@@ -342,7 +342,7 @@ export function MenuPage() {
                         type="button"
                         className={`menu-heart-btn ${favoriteIds.has(it.id) ? "active" : ""}`}
                         disabled={busy === it.id}
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           void toggleFavorite(it.id);
                         }}
@@ -379,7 +379,7 @@ export function MenuPage() {
                         <Button
                           type="button"
                           disabled={!it.available || busy === it.id}
-                          onClick={(e) => {
+                          onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             void addToCart(it.id);
                           }}

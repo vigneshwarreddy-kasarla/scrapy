@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiJson } from "../../api/client";
 import { formatMoney } from "../../utils/money";
 import { AdminOrder, DeliveryAgent, renderPager } from "./shared";
+import { useWebSocket } from "../../utils/useWebSocket";
 
 const PAGE_SIZE = 8;
 const ORDER_STATUS_TABS = [
@@ -35,6 +36,24 @@ export function AdminOrdersPage() {
   const [orderStatusFilter, setOrderStatusFilter] = useState("all");
   const [assignAgentByOrder, setAssignAgentByOrder] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
+
+  useWebSocket({
+    topic: "/topic/restaurant",
+    onMessage: (msg) => {
+      console.log("Restaurant topic message:", msg);
+      void loadData();
+      alert("New update from Restaurant Topic!");
+    },
+  });
+
+  useWebSocket({
+    topic: "/topic/delivery",
+    onMessage: (msg) => {
+      console.log("Delivery topic message:", msg);
+      void loadData();
+      alert("New update from Delivery Topic!");
+    },
+  });
 
   const filteredOrders = useMemo(
     () => orders.filter((o) => (orderStatusFilter === "all" ? true : o.status === orderStatusFilter)),

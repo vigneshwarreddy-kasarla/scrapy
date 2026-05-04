@@ -245,7 +245,7 @@ export function CartPage() {
               <form className="stack checkout-form cart-checkout-form" onSubmit={(e) => void placeOrder(e)}>
                 <label>
                   Saved address (optional)
-                  <select value={addressId} onChange={(e) => setAddressId(e.target.value)}>
+                  <select value={addressId} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setAddressId(e.target.value)}>
                     <option value="">— none —</option>
                     {addresses.map((a) => (
                       <option key={a.id} value={a.id}>
@@ -260,7 +260,7 @@ export function CartPage() {
                     maxLength={500}
                     rows={3}
                     value={customerNote}
-                    onChange={(e) => setCustomerNote(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomerNote(e.target.value)}
                   />
                 </label>
                 <div className="coupon-box">
@@ -270,7 +270,7 @@ export function CartPage() {
                       <input
                         placeholder="e.g. SOCCER-XXXX"
                         value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCouponCode(e.target.value)}
                         maxLength={24}
                       />
                       <Button type="button" onClick={() => void applyCoupon()}>
@@ -283,7 +283,7 @@ export function CartPage() {
                     <input
                       placeholder="Optional mobile number"
                       value={couponMobile}
-                      onChange={(e) => setCouponMobile(e.target.value.replace(/\D/g, "").slice(0, 15))}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCouponMobile(e.target.value.replace(/\D/g, "").slice(0, 15))}
                       maxLength={15}
                     />
                   </label>

@@ -46,6 +46,7 @@ public class SecurityConfig {
                 c.setExposedHeaders(List.of("Location"));
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/api/**", c);
+                source.registerCorsConfiguration("/ws/**", c);
                 return source;
         }
 
@@ -78,7 +79,7 @@ public class SecurityConfig {
                                                                                 "/api/v1/games/soccer/guest/play",
                                                                                 "/api/v1/games/soccer/guest/validate-coupon")
                                                                 .permitAll()
-                                                                .requestMatchers(HttpMethod.GET, "/dummyimages/**")
+                                                                .requestMatchers(HttpMethod.GET, "/dummyimages/**", "/ws/**")
                                                                 .permitAll()
                                                                 .requestMatchers(
                                                                                 HttpMethod.POST,

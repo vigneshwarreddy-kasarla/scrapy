@@ -27,11 +27,13 @@ public class OrderService {
     private final OrderRepository orders;
     private final UserRepository users;
     private final AddressService addresses;
+    private final com.fillos.backend.config.NotificationService notificationService;
 
-    public OrderService(OrderRepository orders, UserRepository users, AddressService addresses) {
+    public OrderService(OrderRepository orders, UserRepository users, AddressService addresses, com.fillos.backend.config.NotificationService notificationService) {
         this.orders = orders;
         this.users = users;
         this.addresses = addresses;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -135,6 +137,7 @@ public class OrderService {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "Order cannot be assigned (wrong status, already assigned, or completed)");
         }
+        notificationService.notifyDelivery(java.util.Map.of("type", "ASSIGNED", "orderId", orderId));
         return getOrderAdmin(orderId);
     }
 
@@ -147,6 +150,7 @@ public class OrderService {
         if (orders.markDeliveredByAgent(orderId, agentId) == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found or not assigned to you");
         }
+        notificationService.notifyUser(orders.findOrderByIdForAdmin(orderId).get().userId().toString(), java.util.Map.of("type", "DELIVERED", "orderId", orderId));
     }
 
     public List<AdminOrderSummaryResponse> listPendingOrdersForRestaurant() {
@@ -158,6 +162,8 @@ public class OrderService {
         if (orders.acceptOrderByRestaurant(orderId, restaurantId) == 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Order not found or already assigned");
         }
+        notificationService.notifyDelivery(java.util.Map.of("type", "READY_FOR_PICKUP", "orderId", orderId));
+        notificationService.notifyUser(orders.findOrderByIdForAdmin(orderId).get().userId().toString(), java.util.Map.of("type", "PREPARING", "orderId", orderId));
     }
 
     @Transactional

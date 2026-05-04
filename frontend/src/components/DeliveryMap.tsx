@@ -46,7 +46,7 @@ function RoutingMachine({ riderPos, restaurantPos }: { riderPos: L.LatLngTuple |
       searchLabel: "Enter delivery address"
     });
     map.addControl(searchControl);
-    return () => map.removeControl(searchControl);
+    return () => { map.removeControl(searchControl); };
   }, [map]);
 
   // Setup Routing

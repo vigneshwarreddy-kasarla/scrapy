@@ -156,7 +156,7 @@ export function LoginPage() {
             <Button
               type="button"
               className="linkish password-toggle icon-toggle plain-icon-btn wide-hit-target"
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
               title={showPassword ? "Hide password" : "Show password"}
@@ -189,7 +189,7 @@ export function LoginPage() {
                 <Button
                   type="button"
                   className="linkish password-toggle icon-toggle plain-icon-btn wide-hit-target"
-                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
                   onClick={() => setShowConfirmPassword((v) => !v)}
                   aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                   title={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
