@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card } from "pixel-retroui";
+import { Button, Card } from "../components/ui";
 import { apiJson, resolveMediaUrl } from "../api/client";
 import { addCustomerCacheCartItem, setCustomerCacheFavoriteIds } from "../commerce/sessionSync";
 import { formatMoney } from "../utils/money";

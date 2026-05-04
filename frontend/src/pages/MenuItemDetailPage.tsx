@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Button, Card } from "pixel-retroui";
+import { Button, Card } from "../components/ui";
 import { apiJson, resolveMediaUrl } from "../api/client";
 import { formatMoney } from "../utils/money";
 import { getStoredItemRating, setStoredItemRating } from "../utils/ratings";

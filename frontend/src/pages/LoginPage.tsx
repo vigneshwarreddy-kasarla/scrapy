@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { Button, Card } from "pixel-retroui";
+import { Button, Card } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 
 type Rule = { label: string; ok: boolean };

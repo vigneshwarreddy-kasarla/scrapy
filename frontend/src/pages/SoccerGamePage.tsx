@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Card } from "pixel-retroui";
+import { Button, Card } from "../components/ui";
 import { apiJson, getStoredToken } from "../api/client";
 
 type SoccerCoupon = {

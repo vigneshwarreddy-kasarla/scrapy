@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Card, TextArea } from "pixel-retroui";
+import { Button, Card, TextArea } from "../components/ui";
 import { apiJson, resolveMediaUrl } from "../api/client";
 import { readCustomerCache, writeCustomerCache } from "../commerce/sessionSync";
 import { formatMoney } from "../utils/money";

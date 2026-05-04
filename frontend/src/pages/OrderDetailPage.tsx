@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Card } from "pixel-retroui";
+import { Button, Card } from "../components/ui";
 import { Link, useParams } from "react-router-dom";
 import { apiJson } from "../api/client";
 import { formatMoney } from "../utils/money";

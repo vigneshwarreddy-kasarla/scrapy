@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card } from "pixel-retroui";
+import { Card } from "../components/ui";
 import { Link } from "react-router-dom";
 import { apiJson } from "../api/client";
 import { formatMoney } from "../utils/money";

@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useState } from "react";
-import { Button } from "pixel-retroui";
+import { Button } from "./ui";
 import { useAuth } from "../context/AuthContext";
 
 export function Layout() {
