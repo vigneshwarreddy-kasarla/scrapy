@@ -53,10 +53,22 @@ public class AuthService {
         if (req.email() != null && !req.email().isBlank() && users.existsByEmail(req.email())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
         }
+        
+        String assignedRole = "customer";
+        if (req.role() != null && !req.role().isBlank()) {
+            String r = req.role().trim().toLowerCase();
+            if (r.equals("admin")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot register as admin through this endpoint");
+            }
+            if (r.equals("restaurant") || r.equals("delivery_agent")) {
+                assignedRole = r;
+            }
+        }
+        
         String hash = passwordEncoder.encode(req.password());
         String email = req.email() == null || req.email().isBlank() ? null : req.email();
-        UUID id = users.insertUser(req.name(), email, normalizedPhone, DEFAULT_COUNTRY_CODE, hash, "customer");
-        return tokenFor(id, normalizedPhone, "customer", 0);
+        UUID id = users.insertUser(req.name(), email, normalizedPhone, DEFAULT_COUNTRY_CODE, hash, assignedRole, req.lat(), req.lng());
+        return tokenFor(id, normalizedPhone, assignedRole, 0);
     }
 
     /**
@@ -84,7 +96,7 @@ public class AuthService {
         }
         String hash = passwordEncoder.encode(req.password());
         String email = req.email() == null || req.email().isBlank() ? null : req.email();
-        UUID id = users.insertUser(req.name(), email, normalizedPhone, DEFAULT_COUNTRY_CODE, hash, "admin");
+        UUID id = users.insertUser(req.name(), email, normalizedPhone, DEFAULT_COUNTRY_CODE, hash, "admin", req.lat(), req.lng());
         return tokenFor(id, normalizedPhone, "admin", 0);
     }
 
@@ -112,7 +124,7 @@ public class AuthService {
         String email = req.email() == null || req.email().isBlank() ? null : req.email();
         UUID id =
                 users.insertUser(
-                        req.name(), email, normalizedPhone, DEFAULT_COUNTRY_CODE, hash, role);
+                        req.name(), email, normalizedPhone, DEFAULT_COUNTRY_CODE, hash, role, req.lat(), req.lng());
         return new UserProfileResponse(id, req.name(), email, normalizedPhone, role, true, false);
     }
 

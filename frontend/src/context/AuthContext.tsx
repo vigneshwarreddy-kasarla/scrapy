@@ -34,6 +34,9 @@ type AuthState = {
     email: string;
     phone: string;
     password: string;
+    role?: string;
+    lat?: number;
+    lng?: number;
   }) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -93,14 +96,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (input: { name: string; email: string; phone: string; password: string }) => {
+    async (input: { name: string; email: string; phone: string; password: string; role?: string; lat?: number; lng?: number }) => {
       const phoneDigits = input.phone.replace(/\D/g, "").slice(0, 10);
-      const body: Record<string, string> = {
+      const body: Record<string, any> = {
         name: input.name,
         phone: phoneDigits,
         password: input.password,
       };
       if (input.email.trim()) body.email = input.email.trim();
+      if (input.role) body.role = input.role;
+      if (input.lat !== undefined) body.lat = input.lat;
+      if (input.lng !== undefined) body.lng = input.lng;
+      
       const res = await apiJson<{ accessToken: string }>("/api/v1/auth/register", {
         method: "POST",
         auth: false,

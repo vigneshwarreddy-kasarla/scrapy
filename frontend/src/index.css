@@ -2555,3 +2555,47 @@ button:not(.linkish):not(.plain-icon-btn):active:not(:disabled),
     align-items: flex-start;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   REGISTRATION ROLE & LOCATION
+═══════════════════════════════════════════════ */
+.role-selector {
+  margin: 1rem 0 0.5rem;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+}
+
+.radio-label:has(input:checked) {
+  border-color: var(--accent);
+  background: rgba(249, 115, 22, 0.08);
+  color: var(--accent);
+}
+
+.location-capture {
+  margin-bottom: 1rem;
+}
+
+.location-capture p.success-text {
+  margin-top: 0.4rem;
+  color: #10b981;
+  text-align: center;
+}
+

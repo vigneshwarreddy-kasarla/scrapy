@@ -14,7 +14,7 @@ export function ProtectedRoute({ children }: { children: ReactElement }) {
     );
   }
   if (!token) {
-    return <Navigate to="/login" replace state={{ from: loc.pathname }} />;
+    return <Navigate to="/401" replace state={{ from: loc.pathname }} />;
   }
   return children;
 }

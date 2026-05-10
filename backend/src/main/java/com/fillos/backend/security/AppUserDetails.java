@@ -38,6 +38,7 @@ public final class AppUserDetails implements UserDetails {
         return switch (r) {
             case "admin" -> "ROLE_ADMIN";
             case "delivery_agent" -> "ROLE_DELIVERY_AGENT";
+            case "restaurant" -> "ROLE_RESTAURANT";
             default -> "ROLE_CUSTOMER";
         };
     }

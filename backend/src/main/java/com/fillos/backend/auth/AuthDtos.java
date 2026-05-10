@@ -18,7 +18,10 @@ public final class AuthDtos {
                     @Pattern(regexp = "^[0-9]{10}$", message = "phone must be exactly 10 digits")
                     String phone,
             @NotBlank @Pattern(regexp = PASSWORD_POLICY_REGEX, message = PASSWORD_POLICY_MESSAGE)
-                    String password) {}
+                    String password,
+            String role,
+            Double lat,
+            Double lng) {}
 
     public record LoginRequest(
             @NotBlank

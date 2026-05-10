@@ -89,12 +89,12 @@ public class UserRepository {
     }
 
     public UUID insertUser(
-            String name, String email, String phone, String countryCode, String passwordHash, String role) {
+            String name, String email, String phone, String countryCode, String passwordHash, String role, Double lat, Double lng) {
         UUID id = UUID.randomUUID();
         String sql =
                 """
-                INSERT INTO users (id, name, email, phone, country_code, password_hash, role, is_active)
-                VALUES (:id, :name, :email, :phone, :countryCode, :passwordHash, CAST(:role AS user_role), TRUE)
+                INSERT INTO users (id, name, email, phone, country_code, password_hash, role, is_active, lat, lng)
+                VALUES (:id, :name, :email, :phone, :countryCode, :passwordHash, CAST(:role AS user_role), TRUE, :lat, :lng)
                 """;
         MapSqlParameterSource p = new MapSqlParameterSource();
         p.addValue("id", id);
@@ -104,6 +104,8 @@ public class UserRepository {
         p.addValue("countryCode", countryCode);
         p.addValue("passwordHash", passwordHash);
         p.addValue("role", role);
+        p.addValue("lat", lat);
+        p.addValue("lng", lng);
         jdbc.update(sql, p);
         return id;
     }

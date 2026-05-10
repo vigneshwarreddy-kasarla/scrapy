@@ -48,6 +48,10 @@ export function LoginPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("customer");
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
+  const [locating, setLocating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
@@ -62,19 +66,53 @@ export function LoginPage() {
     return <Navigate to={from} replace />;
   }
 
+  function handleGetLocation() {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
+      return;
+    }
+    setLocating(true);
+    setError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLat(pos.coords.latitude);
+        setLng(pos.coords.longitude);
+        setLocating(false);
+      },
+      (err) => {
+        setError("Failed to get location: " + err.message);
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
   async function onSubmit(ev: FormEvent) {
     ev.preventDefault();
     if (mode === "register" && password !== confirmPassword) {
       setError("Password and confirm password must match");
       return;
     }
+    if (mode === "register" && (role === "restaurant" || role === "delivery_agent") && (lat === null || lng === null)) {
+      setError("Location is required for Restaurant/Delivery Partner registration");
+      return;
+    }
+
     setBusy(true);
     setError(null);
     try {
       if (mode === "login") {
         await login(phone.trim(), password);
       } else {
-        await register({ name: name.trim(), email, phone: phone.trim(), password });
+        await register({
+          name: name.trim(),
+          email,
+          phone: phone.trim(),
+          password,
+          role,
+          lat: lat ?? undefined,
+          lng: lng ?? undefined,
+        });
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
@@ -198,6 +236,35 @@ export function LoginPage() {
                 </Button>
               </label>
               {confirmMismatch && <p className="error small">Passwords do not match.</p>}
+              
+              <div className="role-selector">
+                <label className="field-label">Register as:</label>
+                <div className="radio-group">
+                  <label className="radio-label">
+                    <input type="radio" name="role" value="customer" checked={role === "customer"} onChange={() => setRole("customer")} />
+                    <span>User</span>
+                  </label>
+                  <label className="radio-label">
+                    <input type="radio" name="role" value="restaurant" checked={role === "restaurant"} onChange={() => setRole("restaurant")} />
+                    <span>Restaurant</span>
+                  </label>
+                  <label className="radio-label">
+                    <input type="radio" name="role" value="delivery_agent" checked={role === "delivery_agent"} onChange={() => setRole("delivery_agent")} />
+                    <span>Delivery Partner</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="location-capture">
+                <Button type="button" className="secondary-outline full-width" onClick={handleGetLocation} disabled={locating}>
+                  {locating ? "🛰️ Locating..." : lat ? "✅ Location Captured" : "📍 Capture My Location"}
+                </Button>
+                {lat && lng && (
+                  <p className="success-text tiny">
+                    Coordinates: {lat.toFixed(4)}, {lng.toFixed(4)}
+                  </p>
+                )}
+              </div>
             </>
           )}
           <Button type="submit" disabled={busy || (mode === "register" && (hasViolations || confirmMismatch || phone.length !== 10)) || (mode === "login" && phone.length !== 10)}>

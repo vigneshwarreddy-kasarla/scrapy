@@ -22,6 +22,9 @@ import { OrderDetailPage } from "./pages/OrderDetailPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SoccerGamePage } from "./pages/SoccerGamePage";
+import { UnauthorizedPage } from "./pages/UnauthorizedPage";
+import { ForbiddenPage } from "./pages/ForbiddenPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 export default function App() {
   return (
@@ -103,6 +106,9 @@ export default function App() {
                 </CustomerRoute>
               }
             />
+            <Route path="401" element={<UnauthorizedPage />} />
+            <Route path="403" element={<ForbiddenPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

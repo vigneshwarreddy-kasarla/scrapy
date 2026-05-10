@@ -6,8 +6,8 @@ export function CustomerRoute({ children }: { children: ReactElement }) {
   const { loading, user } = useAuth();
 
   if (loading) return <p className="muted">Loading…</p>;
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== "customer") return <Navigate to="/menu" replace />;
+  if (!user) return <Navigate to="/401" replace />;
+  if (user.role !== "customer") return <Navigate to="/403" replace />;
 
   return children;
 }
