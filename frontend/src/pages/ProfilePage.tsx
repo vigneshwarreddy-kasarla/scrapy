@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiJson } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { MapAddressPicker, type GeoAddress } from "../components/MapAddressPicker";
 
 type Profile = {
   id: string;
@@ -57,6 +58,7 @@ export function ProfilePage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   async function load() {
     setError(null);
@@ -108,6 +110,19 @@ export function ProfilePage() {
       country: a.country,
       isDefault: a.isDefault,
     });
+  }
+
+  /** Called when the user picks a pin on the map */
+  function handleMapSelect(geo: GeoAddress) {
+    setAddrForm((prev) => ({
+      ...prev,
+      line1: geo.line1,
+      city: geo.city,
+      region: geo.region,
+      postalCode: geo.postalCode,
+      country: geo.country,
+    }));
+    setShowMapPicker(false);
   }
 
   async function submitAddress(ev: FormEvent) {
@@ -169,6 +184,14 @@ export function ProfilePage() {
 
   return (
     <div className="profile-grid">
+      {/* Map picker overlay */}
+      {showMapPicker && (
+        <MapAddressPicker
+          onSelect={handleMapSelect}
+          onClose={() => setShowMapPicker(false)}
+        />
+      )}
+
       <section className="card">
         <h1>Profile</h1>
         <p className="muted small">Phone: {profile.phone}</p>
@@ -191,18 +214,62 @@ export function ProfilePage() {
 
       <section className="card">
         <h2 className="h2">Addresses</h2>
+
+        {/* Saved addresses list */}
+        {addresses.length > 0 && (
+          <ul className="list-plain stack address-list">
+            {addresses.map((a) => (
+              <li key={a.id} className="card flat address-card-row">
+                <div className="address-card-icon">📍</div>
+                <div className="address-card-body">
+                  <div className="row spread">
+                    <strong>{a.label || "Address"}</strong>
+                    {a.isDefault && <span className="pill">default</span>}
+                  </div>
+                  <p className="small muted">
+                    {[a.line1, a.line2, a.city, a.region, a.postalCode, a.country].filter(Boolean).join(", ")}
+                  </p>
+                  <div className="row gap">
+                    <button type="button" className="linkish" onClick={() => editAddress(a)}>
+                      Edit
+                    </button>
+                    <button type="button" className="linkish danger-text" onClick={() => void deleteAddress(a.id)}>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {addresses.length === 0 && <p className="muted small">No addresses yet. Add one below.</p>}
+
+        {/* Add / Edit form */}
+        <div className="address-form-header">
+          <h3 className="h3">{addrForm.id ? "✏️ Edit Address" : "➕ Add Address"}</h3>
+          <button
+            type="button"
+            className="btn-map-pick"
+            onClick={() => setShowMapPicker(true)}
+            title="Pick location on map"
+          >
+            🗺️ Pin on Map
+          </button>
+        </div>
+
         <form onSubmit={(e) => void submitAddress(e)} className="stack">
           <label>
-            Label
+            Label (e.g. Home, Work)
             <input value={addrForm.label} onChange={(e) => setAddrForm((s) => ({ ...s, label: e.target.value }))} maxLength={80} />
           </label>
           <label>
-            Line 1
+            Line 1 *
             <input
               value={addrForm.line1}
               onChange={(e) => setAddrForm((s) => ({ ...s, line1: e.target.value }))}
               maxLength={200}
               required
+              placeholder="Street / building"
             />
           </label>
           <label>
@@ -211,7 +278,7 @@ export function ProfilePage() {
           </label>
           <div className="row gap">
             <label className="grow">
-              City
+              City *
               <input
                 value={addrForm.city}
                 onChange={(e) => setAddrForm((s) => ({ ...s, city: e.target.value }))}
@@ -220,13 +287,13 @@ export function ProfilePage() {
               />
             </label>
             <label className="grow">
-              Region
+              State / Region
               <input value={addrForm.region} onChange={(e) => setAddrForm((s) => ({ ...s, region: e.target.value }))} maxLength={100} />
             </label>
           </div>
           <div className="row gap">
             <label className="grow">
-              Postal code
+              Postal code *
               <input
                 value={addrForm.postalCode}
                 onChange={(e) => setAddrForm((s) => ({ ...s, postalCode: e.target.value }))}
@@ -235,7 +302,7 @@ export function ProfilePage() {
               />
             </label>
             <label className="grow">
-              Country
+              Country (2-letter)
               <input
                 value={addrForm.country}
                 onChange={(e) => setAddrForm((s) => ({ ...s, country: e.target.value.toUpperCase() }))}
@@ -253,7 +320,7 @@ export function ProfilePage() {
           </label>
           <div className="row gap">
             <button type="submit" disabled={busy}>
-              {addrForm.id ? "Update address" : "Add address"}
+              {addrForm.id ? "Update address" : "Save address"}
             </button>
             {addrForm.id && (
               <button type="button" className="linkish" onClick={() => setAddrForm(EMPTY_ADDRESS)}>
@@ -262,29 +329,6 @@ export function ProfilePage() {
             )}
           </div>
         </form>
-
-        <ul className="list-plain stack address-list">
-          {addresses.map((a) => (
-            <li key={a.id} className="card flat">
-              <div className="row spread">
-                <strong>{a.label || "Address"}</strong>
-                {a.isDefault && <span className="pill">default</span>}
-              </div>
-              <p className="small muted">
-                {[a.line1, a.line2, a.city, a.region, a.postalCode, a.country].filter(Boolean).join(", ")}
-              </p>
-              <div className="row gap">
-                <button type="button" className="linkish" onClick={() => editAddress(a)}>
-                  Edit
-                </button>
-                <button type="button" className="linkish danger-text" onClick={() => void deleteAddress(a.id)}>
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
-          {addresses.length === 0 && <p className="muted small">No addresses yet.</p>}
-        </ul>
       </section>
     </div>
   );

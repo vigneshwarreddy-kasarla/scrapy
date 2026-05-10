@@ -2181,3 +2181,377 @@ button:not(.linkish):not(.plain-icon-btn):active:not(:disabled),
     flex-direction: column;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   MAP ADDRESS PICKER OVERLAY
+═══════════════════════════════════════════════ */
+.map-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.map-picker-modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: min(720px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.map-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.map-picker-header .h3 {
+  margin: 0;
+}
+
+.map-picker-close {
+  font-size: 1.15rem;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.map-picker-hint {
+  padding: 0.5rem 1.25rem 0;
+}
+
+.map-picker-container {
+  flex: 1;
+  min-height: 320px;
+  max-height: 420px;
+  position: relative;
+}
+
+.map-picker-footer {
+  padding: 0.75rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  border-top: 1px solid var(--border);
+}
+
+.map-picker-preview {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.map-picker-geocoding {
+  font-style: italic;
+}
+
+.btn-primary {
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--primary-button);
+  color: var(--primary-button-text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  font-size: 0.97rem;
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+/* ═══════════════════════════════════════════════
+   MAP PIN BUTTON (ProfilePage + CartPage)
+═══════════════════════════════════════════════ */
+.btn-map-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-map-pick:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════
+   PROFILE PAGE — Address card rows
+═══════════════════════════════════════════════ */
+.address-card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.address-card-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.address-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.address-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.address-form-header .h3 {
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   CART PAGE — Saved address section + card strip
+═══════════════════════════════════════════════ */
+.address-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.address-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Horizontal scrollable card strip */
+.saved-addr-strip {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding: 0.25rem 0 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.saved-addr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-width: 9rem;
+  max-width: 12rem;
+  padding: 0.65rem 0.85rem;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.saved-addr-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.saved-addr-card--active {
+  border-color: var(--accent) !important;
+  background: rgba(249, 115, 22, 0.07) !important;
+}
+
+.saved-addr-card--none {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.saved-addr-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.saved-addr-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.saved-addr-detail {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pill-sm {
+  font-size: 0.68rem;
+  padding: 0.06rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  margin-top: 0.1rem;
+}
+
+/* Pinned location badge */
+.pinned-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  background: rgba(249, 115, 22, 0.08);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════
+   ANALYTICS — Growth KPI cards
+═══════════════════════════════════════════════ */
+.analytics-growth-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.analytics-growth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+}
+
+.analytics-growth-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.analytics-growth-badge {
+  display: inline-block;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  width: fit-content;
+}
+
+.analytics-growth-prev {
+  font-size: 0.8rem;
+}
+
+/* ═══════════════════════════════════════════════
+   ANALYTICS — Agent performance table
+═══════════════════════════════════════════════ */
+.analytics-agent-table-section {
+  grid-column: 1 / -1;
+}
+
+.analytics-agent-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.analytics-agent-table th,
+.analytics-agent-table td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.analytics-agent-table th {
+  font-weight: 600;
+  background: var(--bg);
+}
+
+.analytics-agent-table tbody tr:hover {
+  background: rgba(249, 115, 22, 0.04);
+}
+
+/* ═══════════════════════════════════════════════
+   H3 helper
+═══════════════════════════════════════════════ */
+.h3 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — Map picker & address cards
+═══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .map-picker-modal {
+    border-radius: 8px;
+  }
+
+  .map-picker-container {
+    min-height: 220px;
+    max-height: 280px;
+  }
+
+  .analytics-growth-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .address-form-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

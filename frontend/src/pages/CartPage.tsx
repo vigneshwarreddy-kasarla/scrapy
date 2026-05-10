@@ -4,6 +4,7 @@ import { Button, Card, TextArea } from "../components/ui";
 import { apiJson, resolveMediaUrl } from "../api/client";
 import { readCustomerCache, writeCustomerCache } from "../commerce/sessionSync";
 import { formatMoney } from "../utils/money";
+import { MapAddressPicker, type GeoAddress } from "../components/MapAddressPicker";
 
 type CartLine = {
   lineId: string;
@@ -45,6 +46,16 @@ type CouponValidationResponse = {
   expiresAt: string | null;
 };
 
+/** A transient address created from a map pin (not saved to DB, just for this order) */
+type PinnedAddress = {
+  label: "📍 Pinned location";
+  line1: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  country: string;
+};
+
 export function CartPage() {
   const navigate = useNavigate();
   const [cart, setCart] = useState<Cart | null>(null);
@@ -52,12 +63,14 @@ export function CartPage() {
   const [error, setError] = useState<string | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressId, setAddressId] = useState("");
+  const [pinnedAddress, setPinnedAddress] = useState<PinnedAddress | null>(null);
   const [customerNote, setCustomerNote] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [couponMobile, setCouponMobile] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [couponMessage, setCouponMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
@@ -161,13 +174,44 @@ export function CartPage() {
     }
   }
 
+  /** Called when user pins a location on the map */
+  function handleMapPin(geo: GeoAddress) {
+    setPinnedAddress({
+      label: "📍 Pinned location",
+      line1: geo.line1,
+      city: geo.city,
+      region: geo.region,
+      postalCode: geo.postalCode,
+      country: geo.country,
+    });
+    // Clear saved-address selection when using a pin
+    setAddressId("__pinned__");
+    setShowMapPicker(false);
+  }
+
   async function placeOrder(ev: FormEvent) {
     ev.preventDefault();
     setSubmitting(true);
     setError(null);
     try {
       const body: Record<string, unknown> = {};
-      if (addressId) body.deliveryAddressId = addressId;
+
+      if (addressId === "__pinned__" && pinnedAddress) {
+        // Build a one-line snapshot string for the backend — no addressId sent
+        const snap = [
+          pinnedAddress.line1,
+          pinnedAddress.city,
+          pinnedAddress.region,
+          pinnedAddress.postalCode,
+          pinnedAddress.country,
+        ]
+          .filter(Boolean)
+          .join(", ");
+        body.deliveryAddressSnapshot = snap;
+      } else if (addressId) {
+        body.deliveryAddressId = addressId;
+      }
+
       const note = customerNote.trim();
       if (note) body.customerNote = note;
       const order = await apiJson<OrderResponse>("/api/v1/orders", {
@@ -190,6 +234,15 @@ export function CartPage() {
     <div>
       <h1>Cart</h1>
       {error && <p className="error">{error}</p>}
+
+      {/* Map picker overlay */}
+      {showMapPicker && (
+        <MapAddressPicker
+          onSelect={handleMapPin}
+          onClose={() => setShowMapPicker(false)}
+        />
+      )}
+
       {cart.lines.length === 0 ? (
         <p className="muted">
           Cart is empty. <Link to="/menu">Browse menu</Link>
@@ -232,6 +285,7 @@ export function CartPage() {
                 );
               })}
             </div>
+
             <Card className="pixel-card cart-summary-card cart-right-panel">
               <h2 className="h2">Cart Checkout</h2>
               <p className="row spread">
@@ -242,18 +296,78 @@ export function CartPage() {
                 <span>Subtotal</span>
                 <strong>{formatMoney(cart.subtotal)}</strong>
               </p>
+
               <form className="stack checkout-form cart-checkout-form" onSubmit={(e) => void placeOrder(e)}>
-                <label>
-                  Saved address (optional)
-                  <select value={addressId} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setAddressId(e.target.value)}>
-                    <option value="">— none —</option>
-                    {addresses.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {(a.label ? `${a.label}: ` : "") + [a.line1, a.city, a.postalCode].filter(Boolean).join(", ")}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+
+                {/* ── Delivery Address Section ── */}
+                <div className="address-section">
+                  <div className="address-section-header">
+                    <span className="small muted">Delivery address</span>
+                    <button
+                      type="button"
+                      className="btn-map-pick"
+                      onClick={() => setShowMapPicker(true)}
+                      title="Pin delivery location on map"
+                    >
+                      🗺️ Pin on Map
+                    </button>
+                  </div>
+
+                  {/* Pinned-location badge */}
+                  {addressId === "__pinned__" && pinnedAddress && (
+                    <div className="pinned-badge">
+                      <span>📍</span>
+                      <span className="small">
+                        {[pinnedAddress.line1, pinnedAddress.city, pinnedAddress.postalCode].filter(Boolean).join(", ")}
+                      </span>
+                      <button
+                        type="button"
+                        className="linkish small"
+                        onClick={() => { setAddressId(""); setPinnedAddress(null); }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Saved address card strip */}
+                  {addresses.length > 0 && addressId !== "__pinned__" && (
+                    <div className="saved-addr-strip">
+                      {addresses.map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          className={`saved-addr-card${addressId === a.id ? " saved-addr-card--active" : ""}`}
+                          onClick={() => setAddressId(a.id)}
+                          title={[a.line1, a.city, a.postalCode].filter(Boolean).join(", ")}
+                        >
+                          <span className="saved-addr-icon">🏠</span>
+                          <span className="saved-addr-label">{a.label || "Address"}</span>
+                          <span className="saved-addr-detail small muted">
+                            {[a.line1, a.city].filter(Boolean).join(", ")}
+                          </span>
+                          {a.isDefault && <span className="pill pill-sm">default</span>}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className="saved-addr-card saved-addr-card--none"
+                        onClick={() => setAddressId("")}
+                      >
+                        <span className="saved-addr-icon">✕</span>
+                        <span className="saved-addr-label">None</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {addresses.length === 0 && addressId !== "__pinned__" && (
+                    <p className="small muted">
+                      No saved addresses.{" "}
+                      <Link to="/profile">Add one in profile</Link> or pin on map above.
+                    </p>
+                  )}
+                </div>
+
                 <label>
                   Note for kitchen / rider (optional, max 500 chars)
                   <TextArea
@@ -263,6 +377,7 @@ export function CartPage() {
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomerNote(e.target.value)}
                   />
                 </label>
+
                 <div className="coupon-box">
                   <label>
                     Coupon code
@@ -289,6 +404,7 @@ export function CartPage() {
                   </label>
                   {couponMessage && <p className={appliedCoupon ? "small success" : "small error"}>{couponMessage}</p>}
                 </div>
+
                 <Button type="submit" disabled={submitting}>
                   {submitting ? "Placing order…" : "Place order"}
                 </Button>
