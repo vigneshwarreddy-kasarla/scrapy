@@ -50,4 +50,13 @@ public class RestaurantController {
     public List<com.fillos.backend.menu.MenuDtos.MenuItemResponse> getMyMenu(@AuthenticationPrincipal AppUserDetails user) {
         return menu.listItemsByRestaurant(user.getId());
     }
+
+    @PostMapping("/menu")
+    public com.fillos.backend.menu.MenuDtos.MenuItemResponse addItem(
+            @AuthenticationPrincipal AppUserDetails user,
+            @org.springframework.web.bind.annotation.RequestBody com.fillos.backend.menu.MenuDtos.CreateMenuItemRequest req) {
+        // We need to ensure the repository supports setting the restaurant_id
+        UUID itemId = menu.insertItemForRestaurant(req, user.getId());
+        return menu.findItemForAdmin(itemId);
+    }
 }

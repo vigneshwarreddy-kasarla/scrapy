@@ -188,4 +188,9 @@ public class OrderService {
     public java.util.Map<String, Object> getRestaurantAnalytics(UUID restaurantId) {
         return orders.getRestaurantAnalytics(restaurantId);
     }
+
+    public OrderDtos.OrderTrackingResponse getOrderTracking(UUID orderId) {
+        return orders.findTrackingInfo(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order tracking not found"));
+    }
 }

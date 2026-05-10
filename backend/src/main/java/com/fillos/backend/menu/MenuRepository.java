@@ -247,6 +247,42 @@ public class MenuRepository {
         return id;
     }
 
+    public UUID insertItemForRestaurant(CreateMenuItemRequest req, UUID restaurantId) {
+        UUID id = UUID.randomUUID();
+        String sql =
+                """
+                INSERT INTO menu_items (
+                  id, category_id, name, description, price, discounted_price, image_url,
+                  is_veg, is_available, preparation_time, calories, tags, ingredients, allergens,
+                  weight_grams, display_order, restaurant_id
+                ) VALUES (
+                  :id, :categoryId, :name, :description, :price, :discountedPrice, :imageUrl,
+                  :veg, :available, :prepTime, :calories, :tags, :ingredients, :allergens,
+                  :weightGrams, :displayOrder, :restaurantId
+                )
+                """;
+        MapSqlParameterSource p = new MapSqlParameterSource();
+        p.addValue("id", id);
+        p.addValue("categoryId", req.categoryId());
+        p.addValue("name", req.name());
+        p.addValue("description", req.description());
+        p.addValue("price", req.price());
+        p.addValue("discountedPrice", req.discountedPrice());
+        p.addValue("imageUrl", req.imageUrl());
+        p.addValue("veg", req.veg());
+        p.addValue("available", req.available());
+        p.addValue("prepTime", req.preparationTime());
+        p.addValue("calories", req.calories());
+        p.addValue("tags", sqlTextArray(req.tags()));
+        p.addValue("ingredients", sqlTextArray(req.ingredients()));
+        p.addValue("allergens", sqlTextArray(req.allergens()));
+        p.addValue("weightGrams", req.weightGrams());
+        p.addValue("displayOrder", req.displayOrder());
+        p.addValue("restaurantId", restaurantId);
+        jdbc.update(sql, p);
+        return id;
+    }
+
     public int updateItem(UUID id, UpdateMenuItemRequest req) {
         String sql =
                 """

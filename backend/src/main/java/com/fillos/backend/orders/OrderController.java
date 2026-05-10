@@ -52,4 +52,10 @@ public class OrderController {
             @AuthenticationPrincipal AppUserDetails principal, @PathVariable("orderId") UUID orderId) {
         return orderService.cancelMyOrder(principal.getId(), orderId);
     }
+
+    @GetMapping("/{orderId}/tracking")
+    public OrderDtos.OrderTrackingResponse getTracking(
+            @PathVariable("orderId") UUID orderId) {
+        return orderService.getOrderTracking(orderId);
+    }
 }

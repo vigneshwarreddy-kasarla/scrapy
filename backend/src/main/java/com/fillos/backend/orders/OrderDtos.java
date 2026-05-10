@@ -91,4 +91,11 @@ public final class OrderDtos {
             String paymentStatus,
             Instant paidAt,
             String customerNote) {}
+
+    public record OrderTrackingResponse(
+            BigDecimal customerLat,
+            BigDecimal customerLng,
+            BigDecimal deliveryLat,
+            BigDecimal deliveryLng,
+            String status) {}
 }

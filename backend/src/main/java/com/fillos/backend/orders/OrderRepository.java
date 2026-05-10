@@ -562,6 +562,28 @@ public class OrderRepository {
                 Map.of("orderId", orderId, "lat", lat, "lng", lng));
     }
 
+    public Optional<OrderDtos.OrderTrackingResponse> findTrackingInfo(UUID orderId) {
+        String sql =
+                """
+                SELECT u.lat as customer_lat, u.lng as customer_lng, 
+                       o.delivery_lat, o.delivery_lng, o.status::text
+                FROM orders o
+                JOIN users u ON u.id = o.user_id
+                WHERE o.id = :orderId
+                """;
+        return jdbc.query(
+                sql,
+                Map.of("orderId", orderId),
+                (rs, rn) ->
+                        new OrderDtos.OrderTrackingResponse(
+                                rs.getBigDecimal("customer_lat"),
+                                rs.getBigDecimal("customer_lng"),
+                                rs.getBigDecimal("delivery_lat"),
+                                rs.getBigDecimal("delivery_lng"),
+                                rs.getString("status")))
+                .stream().findFirst();
+    }
+
     public Map<String, Object> getRestaurantAnalytics(UUID restaurantId) {
         String sql =
                 """

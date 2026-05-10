@@ -6,6 +6,7 @@ import { formatMoney } from "../utils/money";
 import { setStoredItemRating } from "../utils/ratings";
 import { useAuth } from "../context/AuthContext";
 import { useWebSocket } from "../utils/useWebSocket";
+import { MapComponent } from "../components/MapComponent";
 
 type Line = {
   lineId: string;
@@ -28,6 +29,12 @@ type OrderDetail = {
   customerNote: string | null;
 };
 
+type TrackingInfo = {
+  deliveryLat: number | null;
+  deliveryLng: number | null;
+  status: string;
+};
+
 type ReviewResponse = {
   reviewId: string;
   orderId: string;
@@ -40,6 +47,7 @@ export function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { user } = useAuth();
   const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [tracking, setTracking] = useState<TrackingInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [payInfo, setPayInfo] = useState<string | null>(null);
   const [review, setReview] = useState<ReviewResponse | null>(null);
@@ -75,22 +83,41 @@ export function OrderDetailPage() {
     }
   };
 
+  const loadTracking = async () => {
+    if (!orderId) return;
+    try {
+      const info = await apiJson<TrackingInfo>(`/api/v1/orders/${orderId}/tracking`);
+      setTracking(info);
+    } catch (e) {
+      console.error("Tracking failed", e);
+    }
+  };
+
   useWebSocket({
     topic: user?.id ? `/topic/user/${user.id}` : "",
     onMessage: (msg) => {
       console.log("Order update received:", msg);
       void loadOrder();
-      alert("Order update received!");
+      void loadTracking();
     },
   });
 
   useEffect(() => {
     let cancelled = false;
     void loadOrder(cancelled);
+    void loadTracking();
+    
+    const interval = setInterval(() => {
+        if (order?.status === 'out_for_delivery') {
+            void loadTracking();
+        }
+    }, 10000);
+
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
-  }, [orderId]);
+  }, [orderId, order?.status]);
 
   async function bypassPayment() {
     if (!orderId) return;
@@ -182,68 +209,97 @@ export function OrderDetailPage() {
   }
 
   return (
-    <div>
+    <div className="stack gap-1">
       <p>
         <Link to="/orders">← Orders</Link>
       </p>
-      <Card className="pixel-card">
-        <h1>Order {order.orderId.slice(0, 8)}…</h1>
-        {error && <p className="error">{error}</p>}
-        <p>
-          <span className="pill">{order.status}</span> · {order.paymentStatus}
-          {order.paidAt ? ` · paid ${order.paidAt}` : ""}
-        </p>
-        <p>Placed: {order.createdAt}</p>
-        <p>Total: {formatMoney(order.total)}</p>
-        {order.deliveryAddressSnapshot && (
-          <p>
-            <strong>Address:</strong> {order.deliveryAddressSnapshot}
-          </p>
-        )}
-        {order.customerNote && (
-          <p>
-            <strong>Note:</strong> {order.customerNote}
-          </p>
-        )}
-        <h2 className="h2">Lines</h2>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Each</th>
-              <th>Line</th>
-            </tr>
-          </thead>
-          <tbody>
-            {order.lines.map((ln) => (
-              <tr key={ln.lineId}>
-                <td>{ln.itemName}</td>
-                <td>{ln.quantity}</td>
-                <td>{formatMoney(ln.unitPrice)}</td>
-                <td>{formatMoney(ln.lineTotal)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-      <div className="stack actions">
-        {order.paymentStatus === "unpaid" && order.status !== "cancelled" && (
-          <>
-            <Button type="button" onClick={() => void bypassPayment()}>
-              Simulate Payment (Bypass Razorpay)
-            </Button>
-            <p className="muted small">
-              Click this button to instantly mark the order as paid and notify the restaurant.
+      
+      <div className="grid cols-1 lg-cols-3 gap-2">
+        <div className="lg-span-2">
+          <Card className="pixel-card">
+            <h1>Order {order.orderId.slice(0, 8)}…</h1>
+            {error && <p className="error">{error}</p>}
+            <p>
+              <span className="pill">{order.status}</span> · {order.paymentStatus}
+              {order.paidAt ? ` · paid ${order.paidAt}` : ""}
             </p>
-          </>
-        )}
-        {(order.status === "placed" || order.status === "confirmed") && order.paymentStatus === "unpaid" && (
-          <Button type="button" className="danger" onClick={() => void cancelOrder()}>
-            Cancel order
-          </Button>
-        )}
+            <p>Placed: {order.createdAt}</p>
+            <p>Total: {formatMoney(order.total)}</p>
+            {order.deliveryAddressSnapshot && (
+              <p>
+                <strong>Address:</strong> {order.deliveryAddressSnapshot}
+              </p>
+            )}
+            {order.customerNote && (
+              <p>
+                <strong>Note:</strong> {order.customerNote}
+              </p>
+            )}
+            <h2 className="h3 mt-2">Lines</h2>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Each</th>
+                  <th>Line</th>
+                </tr>
+              </thead>
+              <tbody>
+                {order.lines.map((ln) => (
+                  <tr key={ln.lineId}>
+                    <td>{ln.itemName}</td>
+                    <td>{ln.quantity}</td>
+                    <td>{formatMoney(ln.unitPrice)}</td>
+                    <td>{formatMoney(ln.lineTotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+
+        <div>
+          {order.status === "out_for_delivery" && tracking?.deliveryLat ? (
+            <Card className="pixel-card">
+              <h2 className="h3">Track Delivery</h2>
+              <p className="small muted mb-1">Live location of your delivery agent</p>
+              <MapComponent 
+                points={[{ 
+                  lat: tracking.deliveryLat, 
+                  lng: tracking.deliveryLng!, 
+                  label: "Delivery Agent" 
+                }]} 
+                zoom={15}
+              />
+            </Card>
+          ) : order.status === 'delivered' ? (
+             <Card className="pixel-card success-card">
+                 <p className="bold">Order Delivered!</p>
+                 <p className="small">Enjoy your food.</p>
+             </Card>
+          ) : (
+            <Card className="pixel-card">
+              <h2 className="h3">Order Tracking</h2>
+              <p className="muted">Tracking will be available once the order is out for delivery.</p>
+            </Card>
+          )}
+
+          <div className="stack actions mt-1">
+            {order.paymentStatus === "unpaid" && order.status !== "cancelled" && (
+              <Button type="button" onClick={() => void bypassPayment()}>
+                Simulate Payment
+              </Button>
+            )}
+            {(order.status === "placed" || order.status === "confirmed") && order.paymentStatus === "unpaid" && (
+              <Button type="button" className="danger" onClick={() => void cancelOrder()}>
+                Cancel order
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
+
       {order.status === "delivered" && (
         <div id="review">
         <Card className="pixel-card order-rating-card">
@@ -295,7 +351,7 @@ export function OrderDetailPage() {
               maxLength={1000}
               value={reviewNote}
               onChange={(e) => setReviewNote(e.target.value)}
-              placeholder="Share quick feedback about food, packaging, and delivery."
+              placeholder="Share quick feedback..."
             />
           </label>
 
@@ -304,11 +360,6 @@ export function OrderDetailPage() {
           </Button>
         </Card>
         </div>
-      )}
-      {payInfo && (
-        <pre className="codeblock">
-          <code>{payInfo}</code>
-        </pre>
       )}
     </div>
   );
