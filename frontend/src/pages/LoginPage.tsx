@@ -38,10 +38,9 @@ function EyeIcon({ open }: { open: boolean }) {
 }
 
 export function LoginPage() {
-  const { token, login, register } = useAuth();
+  const { token, user, login, register } = useAuth();
   const loc = useLocation();
-  const from = (loc.state as { from?: string } | null)?.from ?? "/menu";
-
+  
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -62,8 +61,19 @@ export function LoginPage() {
   const hasViolations = failedRules.length > 0;
   const confirmMismatch = mode === "register" && confirmPassword.length > 0 && password !== confirmPassword;
 
-  if (token) {
-    return <Navigate to={from} replace />;
+  if (token && user) {
+    const from = (loc.state as { from?: string } | null)?.from;
+    if (from && from !== "/menu") {
+      return <Navigate to={from} replace />;
+    }
+    
+    // Default redirects based on role
+    switch (user.role) {
+      case "admin": return <Navigate to="/admin" replace />;
+      case "restaurant": return <Navigate to="/restaurant" replace />;
+      case "delivery_agent": return <Navigate to="/delivery" replace />;
+      default: return <Navigate to="/menu" replace />;
+    }
   }
 
   function handleGetLocation() {

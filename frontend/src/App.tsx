@@ -25,6 +25,10 @@ import { SoccerGamePage } from "./pages/SoccerGamePage";
 import { UnauthorizedPage } from "./pages/UnauthorizedPage";
 import { ForbiddenPage } from "./pages/ForbiddenPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { RestaurantDashboard } from "./pages/RestaurantDashboard";
+import { DeliveryDashboard } from "./pages/DeliveryDashboard";
+import { RestaurantRoute } from "./components/RestaurantRoute";
+import { DeliveryRoute } from "./components/DeliveryRoute";
 
 export default function App() {
   return (
@@ -104,6 +108,26 @@ export default function App() {
                     <OrderDetailPage />
                   </ProtectedRoute>
                 </CustomerRoute>
+              }
+            />
+            <Route
+              path="restaurant"
+              element={
+                <RestaurantRoute>
+                  <ProtectedRoute>
+                    <RestaurantDashboard />
+                  </ProtectedRoute>
+                </RestaurantRoute>
+              }
+            />
+            <Route
+              path="delivery"
+              element={
+                <DeliveryRoute>
+                  <ProtectedRoute>
+                    <DeliveryDashboard />
+                  </ProtectedRoute>
+                </DeliveryRoute>
               }
             />
             <Route path="401" element={<UnauthorizedPage />} />

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { getApiBase } from "../api/client";
 
 type UseWebSocketProps = {
   topic: string;
@@ -13,9 +14,7 @@ export function useWebSocket({ topic, onMessage }: UseWebSocketProps) {
   useEffect(() => {
     const client = new Client({
       // We use webSocketFactory because SockJS handles fallback scenarios
-      webSocketFactory: () => new SockJS(
-        import.meta.env.MODE === "production" ? "/ws" : "http://localhost:8080/ws"
-      ),
+      webSocketFactory: () => new SockJS(`${getApiBase()}/ws`),
       debug: (str) => console.log("[STOMP]", str),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
