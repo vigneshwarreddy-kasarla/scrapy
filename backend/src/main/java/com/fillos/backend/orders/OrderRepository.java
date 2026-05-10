@@ -248,6 +248,38 @@ public class OrderRepository {
                                 rs.getString("customer_note")));
     }
 
+    public List<AdminOrderSummaryResponse> listAvailableOrdersForDelivery(int limit) {
+        String sql =
+                """
+                SELECT o.id, o.user_id, u.phone, o.status::text, o.total_amount, o.created_at,
+                       o.delivery_agent_id, o.delivered_at, o.delivery_address_snapshot,
+                       o.payment_status::text, o.paid_at, o.customer_note
+                FROM orders o
+                JOIN users u ON u.id = o.user_id AND u.deleted_at IS NULL
+                WHERE o.delivery_agent_id IS NULL 
+                  AND o.status IN (CAST('preparing' AS order_status), CAST('ready' AS order_status))
+                ORDER BY o.created_at ASC
+                LIMIT :limit
+                """;
+        return jdbc.query(
+                sql,
+                Map.of("limit", limit),
+                (rs, rn) ->
+                        new AdminOrderSummaryResponse(
+                                rs.getObject("id", UUID.class),
+                                rs.getObject("user_id", UUID.class),
+                                rs.getString("phone"),
+                                rs.getString("status"),
+                                rs.getBigDecimal("total_amount"),
+                                rs.getTimestamp("created_at").toInstant(),
+                                rs.getObject("delivery_agent_id", UUID.class),
+                                instantOrNull(rs.getTimestamp("delivered_at")),
+                                rs.getString("delivery_address_snapshot"),
+                                rs.getString("payment_status"),
+                                instantOrNull(rs.getTimestamp("paid_at")),
+                                rs.getString("customer_note")));
+    }
+
     public Optional<AdminOrderDetailResponse> findOrderByIdForAdmin(UUID orderId) {
         String orderSql =
                 """
@@ -341,6 +373,20 @@ public class OrderRepository {
                 WHERE id = :orderId
                   AND delivery_agent_id = :agentId
                   AND delivered_at IS NULL
+                """,
+                Map.of("orderId", orderId, "agentId", agentId));
+    }
+
+    public int assignDeliveryToSelf(UUID orderId, UUID agentId) {
+        return jdbc.update(
+                """
+                UPDATE orders
+                SET delivery_agent_id = :agentId,
+                    status = CAST('out_for_delivery' AS order_status),
+                    updated_at = NOW()
+                WHERE id = :orderId
+                  AND delivery_agent_id IS NULL
+                  AND status IN (CAST('preparing' AS order_status), CAST('ready' AS order_status))
                 """,
                 Map.of("orderId", orderId, "agentId", agentId));
     }
@@ -514,6 +560,21 @@ public class OrderRepository {
                 WHERE id = :orderId
                 """,
                 Map.of("orderId", orderId, "lat", lat, "lng", lng));
+    }
+
+    public Map<String, Object> getRestaurantAnalytics(UUID restaurantId) {
+        String sql =
+                """
+                SELECT 
+                    COUNT(*) FILTER (WHERE status = CAST('delivered' AS order_status)) as delivered_count,
+                    COUNT(*) FILTER (WHERE status = CAST('placed' AS order_status) OR status = CAST('confirmed' AS order_status)) as pending_count,
+                    COUNT(*) FILTER (WHERE status = CAST('preparing' AS order_status) OR status = CAST('ready' AS order_status)) as active_count,
+                    COALESCE(SUM(quantity), 0) as total_items_sold
+                FROM orders o
+                LEFT JOIN order_items oi ON oi.order_id = o.id
+                WHERE o.restaurant_id = :restaurantId OR (o.restaurant_id IS NULL AND o.status = CAST('placed' AS order_status))
+                """;
+        return jdbc.queryForMap(sql, Map.of("restaurantId", restaurantId));
     }
 
     public record RazorpayOrderContext(

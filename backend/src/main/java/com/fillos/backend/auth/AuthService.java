@@ -138,12 +138,12 @@ public class AuthService {
         String normalizedPhone = normalizeIndiaPhone(req.phone());
         UserAccount u =
                 users.findByPhone(normalizedPhone)
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid number"));
         if (!u.active()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account is inactive");
         }
         if (u.passwordHash() == null || !passwordEncoder.matches(req.password(), u.passwordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
         }
         return tokenFor(u.id(), u.phone(), u.role(), u.tokenVersion());
     }

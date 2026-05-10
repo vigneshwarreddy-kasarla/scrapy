@@ -13,20 +13,46 @@ type OrderSummary = {
 };
 
 export function DeliveryDashboard() {
-  const [orders, setOrders] = useState<OrderSummary[]>([]);
+  const [activeJobs, setActiveJobs] = useState<OrderSummary[]>([]);
+  const [availableJobs, setAvailableJobs] = useState<OrderSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchOrders();
+    refresh();
   }, []);
 
-  async function fetchOrders() {
+  async function refresh() {
+    await Promise.all([fetchActiveJobs(), fetchAvailableJobs()]);
+  }
+
+  async function fetchActiveJobs() {
     try {
       const list = await apiJson<OrderSummary[]>("/api/v1/delivery/orders");
-      setOrders(list);
+      setActiveJobs(list);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load delivery jobs");
+      setError(e instanceof Error ? e.message : "Failed to load active jobs");
+    }
+  }
+
+  async function fetchAvailableJobs() {
+    try {
+      const list = await apiJson<OrderSummary[]>("/api/v1/delivery/orders/available");
+      setAvailableJobs(list);
+    } catch (e) {
+      console.error("Failed to load available jobs", e);
+    }
+  }
+
+  async function takeJob(orderId: string) {
+    setBusy(orderId);
+    try {
+      await apiJson(`/api/v1/delivery/orders/${orderId}/take`, { method: "POST" });
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to take job");
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -34,7 +60,7 @@ export function DeliveryDashboard() {
     setBusy(orderId);
     try {
       await apiJson(`/api/v1/delivery/orders/${orderId}/complete`, { method: "POST" });
-      await fetchOrders();
+      await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to complete delivery");
     } finally {
@@ -43,21 +69,21 @@ export function DeliveryDashboard() {
   }
 
   return (
-    <div className="stack">
+    <div className="stack gap-2">
       <header className="row spread align-center">
         <h1>Delivery Dashboard</h1>
-        <Button onClick={fetchOrders} className="secondary">Refresh</Button>
+        <Button onClick={refresh} className="secondary">Refresh</Button>
       </header>
 
       {error && <p className="error">{error}</p>}
 
       <section>
         <h2 className="h3">My Active Jobs</h2>
-        {orders.length === 0 ? (
-          <p className="muted">No active delivery jobs. Waiting for assignments...</p>
+        {activeJobs.length === 0 ? (
+          <p className="muted">No active delivery jobs. Pick one from the list below!</p>
         ) : (
-          <div className="grid cols-1 md-cols-2 lg-cols-3 gap-1">
-            {orders.map((o) => (
+          <div className="grid cols-1 md-cols-2 gap-1">
+            {activeJobs.map((o) => (
               <Card key={o.orderId} className="pixel-card stack gap-05">
                 <div className="row spread">
                   <strong>Order #{o.orderId.slice(0, 8)}</strong>
@@ -65,7 +91,6 @@ export function DeliveryDashboard() {
                 </div>
                 <p className="small">Customer: {o.customerName}</p>
                 {o.deliveryAddress && <p className="small">Address: {o.deliveryAddress}</p>}
-                <p className="small muted">Assigned: {new Date(o.createdAt).toLocaleString()}</p>
                 <p className="price">{formatMoney(o.total)}</p>
                 <Button 
                   onClick={() => completeDelivery(o.orderId)} 
@@ -73,6 +98,34 @@ export function DeliveryDashboard() {
                   className="success"
                 >
                   {busy === o.orderId ? "Updating..." : "Mark as Delivered"}
+                </Button>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <hr />
+
+      <section>
+        <h2 className="h3">Available Jobs (Ready for Pickup)</h2>
+        {availableJobs.length === 0 ? (
+          <p className="muted">No jobs available right now. Check back soon!</p>
+        ) : (
+          <div className="grid cols-1 md-cols-2 lg-cols-3 gap-1">
+            {availableJobs.map((o) => (
+              <Card key={o.orderId} className="pixel-card stack gap-05">
+                <div className="row spread">
+                  <strong>#{o.orderId.slice(0, 8)}</strong>
+                  <span className="pill warning">{o.status}</span>
+                </div>
+                <p className="small">Address: {o.deliveryAddress || "See details"}</p>
+                <p className="price">{formatMoney(o.total)}</p>
+                <Button 
+                  onClick={() => takeJob(o.orderId)} 
+                  disabled={busy === o.orderId}
+                >
+                  {busy === o.orderId ? "Taking..." : "Pick Up Order"}
                 </Button>
               </Card>
             ))}

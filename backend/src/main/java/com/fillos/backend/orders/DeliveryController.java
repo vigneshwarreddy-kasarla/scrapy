@@ -28,6 +28,16 @@ public class DeliveryController {
         return orderService.listOrdersForAgent(principal.getId());
     }
 
+    @GetMapping("/orders/available")
+    public List<AdminOrderSummaryResponse> availableOrders() {
+        return orderService.listAvailableOrdersForDelivery();
+    }
+
+    @PostMapping("/orders/{orderId}/take")
+    public void takeOrder(@AuthenticationPrincipal AppUserDetails principal, @PathVariable UUID orderId) {
+        orderService.takeOrderByAgent(principal.getId(), orderId);
+    }
+
     @PostMapping("/orders/{orderId}/complete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void complete(

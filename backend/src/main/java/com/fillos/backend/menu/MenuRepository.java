@@ -141,6 +141,19 @@ public class MenuRepository {
         return jdbc.query(sql, Map.of("categoryId", categoryId), ITEM_ROW);
     }
 
+    public List<MenuItemResponse> listItemsByRestaurant(UUID restaurantId) {
+        String sql =
+                """
+                SELECT id, category_id, name, description, price, discounted_price,
+                       image_url, is_veg, is_available, preparation_time, calories, tags,
+                       ingredients, allergens, weight_grams, display_order
+                FROM menu_items
+                WHERE restaurant_id = :restaurantId
+                ORDER BY name ASC
+                """;
+        return jdbc.query(sql, Map.of("restaurantId", restaurantId), ITEM_ROW);
+    }
+
     public UUID insertCategory(CreateCategoryRequest req) {
         UUID id = UUID.randomUUID();
         String sql =

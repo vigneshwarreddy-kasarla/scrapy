@@ -145,6 +145,18 @@ public class OrderService {
         return orders.listOrdersForDeliveryAgent(agentId, LIST_LIMIT);
     }
 
+    public List<AdminOrderSummaryResponse> listAvailableOrdersForDelivery() {
+        return orders.listAvailableOrdersForDelivery(LIST_LIMIT);
+    }
+
+    @Transactional
+    public void takeOrderByAgent(UUID agentId, UUID orderId) {
+        if (orders.assignDeliveryToSelf(orderId, agentId) == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order already taken or in wrong status");
+        }
+        notificationService.notifyUser(orders.findOrderByIdForAdmin(orderId).get().userId().toString(), java.util.Map.of("type", "OUT_FOR_DELIVERY", "orderId", orderId));
+    }
+
     @Transactional
     public void completeDelivery(UUID agentId, UUID orderId) {
         if (orders.markDeliveredByAgent(orderId, agentId) == 0) {
@@ -171,5 +183,9 @@ public class OrderService {
         if (orders.updateDeliveryLocation(orderId, lat, lng) == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
         }
+    }
+
+    public java.util.Map<String, Object> getRestaurantAnalytics(UUID restaurantId) {
+        return orders.getRestaurantAnalytics(restaurantId);
     }
 }

@@ -125,7 +125,8 @@ export function LoginPage() {
         });
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
+      const msg = e instanceof Error ? e.message : "Failed";
+      setError(msg);
     } finally {
       setBusy(false);
     }
