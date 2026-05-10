@@ -40,7 +40,7 @@ public class AdminBootstrapRunner implements ApplicationRunner {
         }
         String hash = passwordEncoder.encode(props.password());
         String email = props.email() == null || props.email().isBlank() ? null : props.email();
-        users.insertUser(props.name(), email, storedPhone, DEFAULT_COUNTRY_CODE, hash, "admin");
+        users.insertUser(props.name(), email, storedPhone, DEFAULT_COUNTRY_CODE, hash, "admin", null, null);
         log.info("Bootstrapped admin user for phone {}", storedPhone);
     }
 
