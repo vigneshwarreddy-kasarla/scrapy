@@ -24,6 +24,7 @@ export function addGuestCartItem(menuItemId: string, quantity = 1): void {
   if (idx >= 0) lines[idx] = { ...lines[idx], quantity: lines[idx].quantity + quantity };
   else lines.push({ menuItemId, quantity });
   sessionStorage.setItem(GUEST_CART_KEY, JSON.stringify(lines));
+  window.dispatchEvent(new Event("cart:changed"));
 }
 
 export function readGuestFavorites(): string[] {
@@ -48,6 +49,7 @@ export function toggleGuestFavorite(menuItemId: string): boolean {
 
 export function writeCustomerCache(cache: CustomerCache): void {
   sessionStorage.setItem(CUSTOMER_CACHE_KEY, JSON.stringify(cache));
+  window.dispatchEvent(new Event("cart:changed"));
 }
 
 export function readCustomerCache(): CustomerCache {
@@ -93,6 +95,7 @@ export function toggleCustomerCacheFavorite(menuItemId: string): boolean {
 export function clearGuestSessionData(): void {
   sessionStorage.removeItem(GUEST_CART_KEY);
   sessionStorage.removeItem(GUEST_FAVORITES_KEY);
+  window.dispatchEvent(new Event("cart:changed"));
 }
 
 export async function mergeGuestDataOnLogin(): Promise<void> {
@@ -134,4 +137,9 @@ export async function flushCustomerCacheOnLogout(): Promise<void> {
     method: "PUT",
     body: JSON.stringify({ menuItemIds: cache.favoriteIds }),
   });
+}
+
+export function getCartTotalQuantity(token?: string | null): number {
+  const lines = token ? readCustomerCache().cartLines : readGuestCart();
+  return lines.reduce((acc, item) => acc + item.quantity, 0);
 }

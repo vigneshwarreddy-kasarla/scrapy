@@ -1,13 +1,29 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "./ui";
 import { useAuth } from "../context/AuthContext";
+import { getCartTotalQuantity } from "../commerce/sessionSync";
 
 export function Layout() {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
+  const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(() => getCartTotalQuantity(token));
   const isAdmin = user?.role === "admin";
   const isCustomer = user?.role === "customer";
+
+  // Recalculate quantity whenever token or cart changes
+  useEffect(() => {
+    setCartCount(getCartTotalQuantity(token));
+  }, [token]);
+
+  useEffect(() => {
+    const handleCartChanged = () => {
+      setCartCount(getCartTotalQuantity(token));
+    };
+    window.addEventListener("cart:changed", handleCartChanged);
+    return () => window.removeEventListener("cart:changed", handleCartChanged);
+  }, [token]);
 
   return (
     <div className="layout">
@@ -113,6 +129,19 @@ export function Layout() {
           </div>
         </div>
       </footer>
+
+      {/* Floating Cart Button (Swiggy-style) */}
+      {cartCount > 0 && location.pathname !== "/cart" && (
+        <Link to="/cart" className="floating-cart-btn" aria-label="View Cart">
+          <div className="floating-cart-content">
+            <span className="floating-cart-count">{cartCount} {cartCount === 1 ? "item" : "items"} added</span>
+            <span className="floating-cart-separator">|</span>
+            <span className="floating-cart-action">
+              View Cart 🛒 <span className="floating-cart-arrow">➔</span>
+            </span>
+          </div>
+        </Link>
+      )}
     </div>
   );
 }

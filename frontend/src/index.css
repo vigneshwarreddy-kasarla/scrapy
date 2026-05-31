@@ -2599,3 +2599,112 @@ button:not(.linkish):not(.plain-icon-btn):active:not(:disabled),
   text-align: center;
 }
 
+/* Floating Cart Button (Swiggy-style) */
+.floating-cart-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  text-decoration: none;
+  background: var(--accent); /* Vibrant Orange matching the app accent */
+  color: #ffffff;
+  padding: 0.85rem 1.5rem;
+  border-radius: 9999px; /* Pill shaped */
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgba(249, 115, 22, 0.35);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, opacity 0.2s ease;
+  animation: floatingCartEntrance 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+[data-theme='dark'] .floating-cart-btn {
+  background: var(--accent);
+  color: #0f172a;
+  box-shadow: 0 10px 25px rgba(251, 146, 60, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .floating-cart-btn {
+    background: var(--accent);
+    color: #0f172a;
+    box-shadow: 0 10px 25px rgba(251, 146, 60, 0.25);
+  }
+}
+
+.floating-cart-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 12px 28px rgba(249, 115, 22, 0.45);
+}
+
+.floating-cart-btn:active {
+  transform: scale(0.98) translateY(1px);
+}
+
+.floating-cart-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.floating-cart-count {
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  opacity: 0.95;
+}
+
+.floating-cart-separator {
+  opacity: 0.5;
+  font-weight: 300;
+}
+
+.floating-cart-action {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.floating-cart-arrow {
+  transition: transform 0.2s ease;
+}
+
+.floating-cart-btn:hover .floating-cart-arrow {
+  transform: translateX(4px);
+}
+
+@keyframes floatingCartEntrance {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Locate Me Button inside Map Picker */
+.btn-locate-me {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  font-weight: 600;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-locate-me:hover {
+  background: var(--panel) !important;
+  border-color: var(--accent) !important;
+}
+
+/* Ensure leaflet popup is readable */
+.leaflet-popup-content-wrapper {
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  border-radius: 8px !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--panel) !important;
+}
+

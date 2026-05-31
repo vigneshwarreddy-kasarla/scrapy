@@ -49,7 +49,6 @@ export function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [tracking, setTracking] = useState<TrackingInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [payInfo, setPayInfo] = useState<string | null>(null);
   const [review, setReview] = useState<ReviewResponse | null>(null);
   const [reviewBusy, setReviewBusy] = useState(false);
   const [deliveryRating, setDeliveryRating] = useState(0);
@@ -121,7 +120,6 @@ export function OrderDetailPage() {
 
   async function bypassPayment() {
     if (!orderId) return;
-    setPayInfo(null);
     setError(null);
     try {
       await apiJson(`/api/v1/orders/${orderId}/payments/bypass`, {

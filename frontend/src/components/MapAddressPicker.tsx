@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -52,6 +52,17 @@ function ClickHandler({
   ) : null;
 }
 
+/* Helper to center the map view when center coordinate updates */
+function MapRecenter({ center }: { center: L.LatLng | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, map.getZoom());
+    }
+  }, [center, map]);
+  return null;
+}
+
 async function reverseGeocode(lat: number, lng: number): Promise<Partial<GeoAddress>> {
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
@@ -85,10 +96,40 @@ async function reverseGeocode(lat: number, lng: number): Promise<Partial<GeoAddr
 
 export function MapAddressPicker({ onSelect, onClose, initialLat = 17.385, initialLng = 78.4867 }: Props) {
   const [position, setPosition] = useState<L.LatLng | null>(null);
+  const [mapCenter, setMapCenter] = useState<L.LatLng | null>(null);
   const [preview, setPreview] = useState<Partial<GeoAddress> | null>(null);
   const [loading, setLoading] = useState(false);
   const geocodeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Auto-locate on mount
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      setLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = new L.LatLng(pos.coords.latitude, pos.coords.longitude);
+          setPosition(loc);
+          setMapCenter(loc);
+          setLoading(false);
+        },
+        (err) => {
+          console.warn("Geolocation automatic lookup failed:", err);
+          // Fallback to default coordinates
+          const loc = new L.LatLng(initialLat, initialLng);
+          setPosition(loc);
+          setMapCenter(loc);
+          setLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    } else {
+      const loc = new L.LatLng(initialLat, initialLng);
+      setPosition(loc);
+      setMapCenter(loc);
+    }
+  }, [initialLat, initialLng]);
+
+  // Geocode address lookup when pin position changes
   useEffect(() => {
     if (!position) return;
     if (geocodeTimeout.current) clearTimeout(geocodeTimeout.current);
@@ -99,6 +140,27 @@ export function MapAddressPicker({ onSelect, onClose, initialLat = 17.385, initi
       setLoading(false);
     }, 500);
   }, [position]);
+
+  const handleLocateMe = () => {
+    if (!("geolocation" in navigator)) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = new L.LatLng(pos.coords.latitude, pos.coords.longitude);
+        setPosition(loc);
+        setMapCenter(loc);
+        setLoading(false);
+      },
+      (err) => {
+        alert("Could not get your current location: " + err.message);
+        setLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  };
 
   function handleUse() {
     if (!position || !preview) return;
@@ -128,7 +190,7 @@ export function MapAddressPicker({ onSelect, onClose, initialLat = 17.385, initi
         </p>
         <div className="map-picker-container">
           <MapContainer
-            center={[initialLat, initialLng]}
+            center={mapCenter || [initialLat, initialLng]}
             zoom={13}
             scrollWheelZoom
             style={{ height: "100%", width: "100%" }}
@@ -138,6 +200,7 @@ export function MapAddressPicker({ onSelect, onClose, initialLat = 17.385, initi
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <ClickHandler position={position} setPosition={setPosition} />
+            {mapCenter && <MapRecenter center={mapCenter} />}
           </MapContainer>
         </div>
 
@@ -153,13 +216,22 @@ export function MapAddressPicker({ onSelect, onClose, initialLat = 17.385, initi
           {!position && !loading && (
             <p className="small muted">No pin placed yet — click the map above.</p>
           )}
-          <div className="row gap">
+          <div className="row gap" style={{ flexWrap: "wrap", alignItems: "center" }}>
             <button
+              type="button"
               className="btn-primary"
               disabled={!position || !preview || loading}
               onClick={handleUse}
             >
               ✔ Use This Location
+            </button>
+            <button
+              type="button"
+              className="btn-locate-me"
+              onClick={handleLocateMe}
+              title="Locate my current position"
+            >
+              🎯 Use Live Location
             </button>
             <button className="linkish" onClick={onClose}>
               Cancel
